@@ -103,3 +103,23 @@ class SimSimpData:
 
         if save is True:
             plt.savefig('data.png')
+
+class Dataset:
+    """Create dataset based on simple data
+    
+    """
+    def __init__(self, base, n):
+        """Provide base data and number of subjects
+        
+        Parameters
+        ----------
+        base: obj
+            SimSimpData object
+
+        n: int
+            number of subjects to include in dataset
+        
+        """
+
+    
+    
