@@ -1,10 +1,11 @@
-#!/usr/bin env python
+#!/usr/bin/env brainiak_env
 
 # imports
 import numpy as np
 from scipy import stats
 import matplotlib.pyplot as plt
 from itertools import repeat, chain
+from brainiak.eventseg.event import EventSegment
 
 # Class for simulated data
 class SimSimpData:
@@ -107,10 +108,6 @@ class SimSimpData:
 class Dataset:
     """Create dataset based on simple data
     
-    """
-    def __init__(self, base, n):
-        """Provide base data and number of subjects
-        
         Parameters
         ----------
         base: obj
@@ -118,8 +115,58 @@ class Dataset:
 
         n: int
             number of subjects to include in dataset
-        
-        """
+    """
+    def __init__(self, base, n):
 
-    
-    
+        # initialize dataset attributes based on single subject (i.e., SimSimpData class)
+        self.n_events = base.n_events
+        self.noise = base.noise
+        self.n_voxels = base.n_voxels
+        self.dataset = np.empty((n), dtype="object")
+
+        self.dataset[0] = base
+
+        # create empty labels vector
+        labels=[]
+
+        # check if skew is True or False and generate event labels
+        if base.skew is False:
+            for i in range(self.n_events):
+                x = list(repeat(i, 5))
+                labels.append(x)
+        elif base.skew is True:
+            _l = np.arange(0, self.n_events)
+            x = list(repeat(_l[0], 10))
+            labels.append(x)
+            for i in range(1, self.n_events):
+                x = list(repeat(i, 5))
+                labels.append(x)
+
+        # clean 
+        labels = list(chain.from_iterable(labels))
+        self.labels = labels
+
+        # get event blocks
+        self.event_blocks = self.n_events + 1
+
+    def make_dataset(self):
+        """Method call that creates dataset"""
+
+        dataset = self.dataset
+
+        for i in range(1, np.size(self.dataset)):
+
+            # make event pattern
+            pattern = np.random.rand(self.event_blocks, self.n_voxels)
+
+            # simulate data
+            data = np.zeros((len(self.labels), self.n_voxels))
+            for j in range(len(self.labels)):
+                data[j, :] = pattern[self.labels[j], :] +\
+                    self.noise * np.random.rand(self.n_voxels)
+                
+            dataset[i] = data
+
+        self.dataset = dataset
+        return self.dataset
+
