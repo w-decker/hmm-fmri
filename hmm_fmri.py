@@ -16,8 +16,8 @@ class SimSimpData:
     n_events: int
         Number of events
 
-    n_voxels: int
-        Number of voxels
+    size: tuple
+        Voxel x timepoints
 
     noise: int
         Embedded variance
@@ -25,6 +25,11 @@ class SimSimpData:
     skew: bool, default: False
         Symmetrical or skewed data.
         The HMM will have a harder time fitting skewed data
+
+    Optional Keyword Args
+    ---------------------
+    skewf: int
+        Skew factor; 1 = high skew, 10 = low skew
 
     Attributes
     ----------
@@ -35,32 +40,35 @@ class SimSimpData:
         List of event labels used to generate data
 
     """
-
     # initialize object
-    def __init__(self, n_events, n_voxels, noise, skew=False):
+    def __init__(self, n_events, size: tuple, noise: int, skew=False, **kwargs):
         self.n_events = n_events
-        self.n_voxels = n_voxels
+        self.size = size
         self.noise = noise
         self.skew = skew
+        self.n_voxels = size[0]
+        self.n_timepts = size[1]
 
-    def data(self):
+    def data(self) -> np.ndarray:
         """Function for actually creating the data
         
         """
+
         # create empty labels vector
         labels=[]
 
         # check if skew is True or False and generate event labels
         if self.skew is False:
             for i in range(self.n_events):
-                x = list(repeat(i, 5))
+                x = list(repeat(i, self.n_timepts))
                 labels.append(x)
         elif self.skew is True:
             _l = np.arange(0, self.n_events)
-            x = list(repeat(_l[0], 10))
+            x = list(repeat(_l[0], self.n_timepts))
             labels.append(x)
+            skewf = self.kwargs.get('skewf')
             for i in range(1, self.n_events):
-                x = list(repeat(i, 5))
+                x = list(repeat(i, skewf))
                 labels.append(x)
         
         # clean 
@@ -78,9 +86,12 @@ class SimSimpData:
             data[i, :] = pattern[labels[i], :] +\
                 self.noise * np.random.rand(self.n_voxels)
         
+        
         # return data and labels to class
         self.data = data
         self.labels = labels
+
+        return self
             
     def plot(self, save=False):
         """Plot the data
