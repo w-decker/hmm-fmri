@@ -132,10 +132,18 @@ class Dataset:
     def __init__(self, base, n):
 
         # initialize dataset attributes based on single subject (i.e., SimSimpData class)
-        self.n_events = base.n_events
-        self.noise = base.noise
         self.n_voxels = base.n_voxels
         self.dataset = np.empty((n), dtype="object")
+        self.n_events = base.n_events
+        self.size = base.size
+        self.noise = base.noise
+        self.skew = base.skew
+        self.n_voxels = base.size[0]
+        self.n_timepts = base.size[1]
+        try:
+            self.skewf = base.skewf
+        except:
+            ValueError
 
         self.dataset[0] = base
 
@@ -145,14 +153,14 @@ class Dataset:
         # check if skew is True or False and generate event labels
         if base.skew is False:
             for i in range(self.n_events):
-                x = list(repeat(i, 5))
+                x = list(repeat(i, self.n_timepts))
                 labels.append(x)
         elif base.skew is True:
             _l = np.arange(0, self.n_events)
-            x = list(repeat(_l[0], 10))
+            x = list(repeat(_l[0], self.n_timepts))
             labels.append(x)
             for i in range(1, self.n_events):
-                x = list(repeat(i, 5))
+                x = list(repeat(i, self.skewf))
                 labels.append(x)
 
         # clean 
