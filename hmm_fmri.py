@@ -5,9 +5,10 @@ import numpy as np
 from scipy import stats
 import matplotlib.pyplot as plt
 from itertools import repeat, chain
-from brainiak.eventseg.event import EventSegment
+from dataclasses import dataclass
 
 # Class for simulated data
+@dataclass
 class SimSimpData:
     """Class for simulating simple voxel by time data with embedded events.
 
@@ -48,8 +49,9 @@ class SimSimpData:
         self.skew = skew
         self.n_voxels = size[0]
         self.n_timepts = size[1]
+        self.skewf = kwargs.get('skewf')
 
-    def data(self) -> np.ndarray:
+    def data(self):
         """Function for actually creating the data
         
         """
@@ -66,9 +68,8 @@ class SimSimpData:
             _l = np.arange(0, self.n_events)
             x = list(repeat(_l[0], self.n_timepts))
             labels.append(x)
-            skewf = self.kwargs.get('skewf')
             for i in range(1, self.n_events):
-                x = list(repeat(i, skewf))
+                x = list(repeat(i, self.skewf))
                 labels.append(x)
         
         # clean 
@@ -101,7 +102,7 @@ class SimSimpData:
         save: bool, default: False
             Save plot
         """
-        plt.imshow(stats.zscore(self.data.T), origin='lower')
+        plt.imshow(stats.zscore(self.data.T), origin='lower', aspect='auto')
         plt.xlabel('Time')
         plt.ylabel('Voxels')
         plt.title('Simulated data with events')
@@ -116,6 +117,7 @@ class SimSimpData:
         if save is True:
             plt.savefig('data.png')
 
+@dataclass
 class Dataset:
     """Create dataset based on simple data
     
@@ -179,5 +181,5 @@ class Dataset:
             dataset[i] = data
 
         self.dataset = dataset
-        return self.dataset
+        return self
 
